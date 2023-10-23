@@ -43,6 +43,8 @@ INSTALLED_APPS = [
     'tp1'
 ]
 
+ASGI_APPLICATION = 'core.asgi.application'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
