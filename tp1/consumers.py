@@ -1,6 +1,7 @@
 from channels.generic.websocket import WebsocketConsumer
 import json
 from asgiref.sync import async_to_sync
+from .encryptions import ENCRYPTION_TYPES
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
@@ -13,10 +14,12 @@ class ChatConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         data = json.loads(text_data)
+        
         sender = data['sender']
-        message = data['message']
         encryption = data['encryption']
-        print(encryption)
+        message = ENCRYPTION_TYPES[str(encryption['type'])]['encryption'](data['message'],encryption['value'])
+
+        print(message)
 
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name,
