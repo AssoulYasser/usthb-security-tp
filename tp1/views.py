@@ -5,7 +5,8 @@ from .encryptions import ENCRYPTION_TYPES
 from .serializers import *
 from .steganography import hide_text, show_text
 
-# Create your views here.
+
+tempo_path = 'tp1/tempo/'
 
 @api_view(['GET'])
 def text_decryption(request):
@@ -22,7 +23,7 @@ def text_decryption(request):
 
 @api_view(['GET'])
 def image_steganography_encryption(request):
-    image_path = 'tp1/encrypted_image.png'
+    image_path = tempo_path + 'encrypted_image.png'
     serializer = SteganographyEncryptionSerializer(data=request.data)
     if serializer.is_valid():
         text = request.data['text']
@@ -35,3 +36,11 @@ def image_steganography_encryption(request):
             return response
         
     return Response(status=400)
+
+@api_view(['GET'])
+def image_steganography_decryption(request):
+    serializer = SteganographyDecryptionSerializer(data=request.data)
+    if serializer.is_valid():
+        image = request.data['image']
+        return Response(status=200, data={"message": show_text(image)})
+    
