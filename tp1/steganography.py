@@ -15,4 +15,4 @@ def show_text(img_path):
 
 # print(hide_text('./tp1/a.jpg', 'hello world!').save("nigga.png"))
 
-# print(show_text("nigga.png"))
+# print(show_text("tp1/image.png"))
