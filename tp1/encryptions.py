@@ -1,4 +1,4 @@
-def left_shift(text, shift):
+def left_caesar(text, shift):
     decrypt_text = ""
     for character in text:
         if 'a' <= character <= 'z':
@@ -9,7 +9,7 @@ def left_shift(text, shift):
             decrypt_text += character
     return decrypt_text
 
-def right_shift(text, shift):
+def right_caesar(text, shift):
     encrypted_text = ""
     for character in text:
         if 'a' <= character <= 'z':
@@ -21,35 +21,16 @@ def right_shift(text, shift):
     return encrypted_text
 
 
-def right_rotation(text, shift):
-    shift = shift % len(text)
-    return text[-shift:] + text[:-shift]
+def right_rotation(text):
+    return text[-1:] + text[:-1]
 
-def left_rotation(text, shift):
-    shift = shift % len(text)
-    return text[shift:] + text[:shift]
+def left_rotation(text):
+    return text[1:] + text[:1]
 
 
-ENCRYPTION_TYPES = {
-    "1": {
-        "name":"left_shift",
-        "encryption":left_shift,
-        "decryption":right_shift
-    },
-    "2": {
-        "name":"right_shift",
-        "encryption":right_shift,
-        "decryption":left_shift
-    },
-    "3": {
-        "name":"left_rotation",
-        "encryption":left_rotation,
-        "decryption":right_rotation
-    },
-    "4": {
-        "name":"right_rotation",
-        "encryption":right_rotation,
-        "decryption":left_rotation
-    },
-}
+ENCRYPTION_TYPES = [
+    "rotation",
+    "caesar"
+]
 
+ENCRYPTION_DIRECTIONS = ['left', 'right']

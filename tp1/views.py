@@ -1,27 +1,38 @@
 from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .encryptions import ENCRYPTION_TYPES
+from .encryptions import *
 from .serializers import *
 from .steganography import hide_text, show_text
 
 
 tempo_path = 'tp1/tempo/'
 
-@api_view(['GET'])
-def text_decryption(request):
-    message = request.data['message']
-    encryption_type = str(request.data['encryption_type'])
-    encryption_value = request.data['encryption_value']
+@api_view(['POST'])
+def rotation_decryption(request):
+    data = request.data
+    serializer = RotationDecryptionSerializer(data=data)
+    if serializer.is_valid():
+        return Response(
+            status=200,
+            data=left_rotation(data['message']) if data['direction'] == 'right' else left_rotation(data['message'])
+        )
+    
+    return Response(status=400, data=serializer.errors)
+    
+@api_view(['POST'])
+def caesar_decryption(request):
+    data = request.data
+    serializer = CaesarDecryptionSerializer(data=data)
+    if serializer.is_valid():
+        return Response(
+            status=200,
+            data=left_caesar(data['message'], data['caesar_value']) if data['direction'] == 'right' else right_caesar(data['message'], data['caesar_value'])
+        )
+    
+    return Response(status=400, data=serializer.errors)
 
-    return Response(
-        status=200,
-        data={
-            "message":ENCRYPTION_TYPES[encryption_type]['decryption'](message, encryption_value)
-        }
-    )
-
-@api_view(['GET'])
+@api_view(['POST'])
 def image_steganography_encryption(request):
     image_path = tempo_path + 'encrypted_image.png'
     serializer = SteganographyEncryptionSerializer(data=request.data)
@@ -35,12 +46,13 @@ def image_steganography_encryption(request):
             response['Content-Disposition'] = 'attachment; filename=image.png'
             return response
         
-    return Response(status=400)
+    return Response(status=400, data=serializer.errors)
 
-@api_view(['GET'])
+@api_view(['POST'])
 def image_steganography_decryption(request):
     serializer = SteganographyDecryptionSerializer(data=request.data)
     if serializer.is_valid():
         image = request.data['image']
         return Response(status=200, data={"message": show_text(image)})
+    return Response(status=400, data=serializer.errors)
     
