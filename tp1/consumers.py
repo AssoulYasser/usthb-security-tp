@@ -45,6 +45,7 @@ class ChatConsumer(WebsocketConsumer):
         sender = event['sender']
         message = event['message']
         direction = event['direction']
+        date = event['date']
         
         self.send(
             text_data=json.dumps(
@@ -52,7 +53,8 @@ class ChatConsumer(WebsocketConsumer):
                     "sender": sender,
                     "message": left_rotation(text=message) if direction == 'left' else right_rotation(text=message),
                     "direction": direction,
-                    "encryption_type":"rotation"
+                    "encryption_type":"rotation",
+                    "date": date
                 }
             )
         )
@@ -62,6 +64,7 @@ class ChatConsumer(WebsocketConsumer):
         message = event['message']
         caesar_value = event['caesar_value']
         direction = event['direction']
+        date = event['date']
         
         self.send(
             text_data=json.dumps(
@@ -70,7 +73,8 @@ class ChatConsumer(WebsocketConsumer):
                     "message": left_caesar(text=message, shift=caesar_value) if direction == 'left' else right_caesar(text=message, shift=caesar_value),
                     "direction": direction,
                     "caesar_value": caesar_value,
-                    "encryption_type":"caesar"
+                    "encryption_type":"caesar",
+                    "date": date
                 }
             )
         )

@@ -5,11 +5,10 @@ class DefaultEncryptionSerializer(serializers.Serializer):
     sender = serializers.CharField()
     message = serializers.CharField()
     encryption_type = serializers.ChoiceField(choices=ENCRYPTION_TYPES)
-    date = serializers.DateField()
+    date = serializers.DateTimeField()
 
 class DefaultDecryptionSerializer(serializers.Serializer):
     message = serializers.CharField()
-    encryption_type = serializers.ChoiceField(choices=ENCRYPTION_TYPES)
 
 class RotationEncryptionSerializer(DefaultEncryptionSerializer):
     direction = serializers.ChoiceField(choices=ENCRYPTION_DIRECTIONS)
