@@ -10,7 +10,7 @@ from .steganography import hide_text, show_text
 tempo_path = 'tp1/tempo/'
 
 @api_view(['POST'])
-def rotation_decryption(request):
+def rotation_decryption_request(request):
     data = request.data
     serializer = RotationDecryptionSerializer(data=data)
     if serializer.is_valid():
@@ -22,7 +22,7 @@ def rotation_decryption(request):
     return Response(status=400, data=serializer.errors)
     
 @api_view(['POST'])
-def caesar_decryption(request):
+def caesar_decryption_request(request):
     data = request.data
     serializer = CaesarDecryptionSerializer(data=data)
     if serializer.is_valid():
@@ -34,7 +34,7 @@ def caesar_decryption(request):
     return Response(status=400, data=serializer.errors)
 
 @api_view(['POST'])
-def mirror_decryption(request):
+def mirror_decryption_request(request):
     data = request.data
     serializer = MirrorDecryptionSerializer(data=data)
     if serializer.is_valid():
@@ -45,7 +45,18 @@ def mirror_decryption(request):
     return Response(status=400, data=serializer.errors)
 
 @api_view(['POST'])
-def image_steganography_encryption(request):
+def affine_decryption_request(request):
+    data = request.data
+    serializer = AffineDecryptionSerializer(data=data)
+    if serializer.is_valid():
+        return Response(
+            status=200,
+            data=affine_decryption(data['message'], data['a'], data['b'])
+        )
+    return Response(status=400, data=serializer.errors)
+
+@api_view(['POST'])
+def image_steganography_encryption_request(request):
     image_path = tempo_path + 'encrypted_image.png'
     serializer = SteganographyEncryptionSerializer(data=request.data)
     if serializer.is_valid():
@@ -61,7 +72,7 @@ def image_steganography_encryption(request):
     return Response(status=400, data=serializer.errors)
 
 @api_view(['POST'])
-def image_steganography_decryption(request):
+def image_steganography_decryption_request(request):
     serializer = SteganographyDecryptionSerializer(data=request.data)
     if serializer.is_valid():
         image = request.data['image']
@@ -69,7 +80,7 @@ def image_steganography_decryption(request):
     return Response(status=400, data=serializer.errors)
     
 @api_view(['POST'])
-def password_attack(request):
+def password_attack_request(request):
     data = request.data
     serializer = PasswordAttackSerializer(data=data)
 

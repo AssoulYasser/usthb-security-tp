@@ -27,6 +27,14 @@ class CaesarDecryptionSerializer(DefaultDecryptionSerializer):
 class MirrorDecryptionSerializer(DefaultDecryptionSerializer):
     extra_char = serializers.CharField()
 
+class AffineEncryptionSerializer(DefaultEncryptionSerializer):
+    a = serializers.IntegerField()
+    b = serializers.IntegerField()
+
+class AffineDecryptionSerializer(DefaultDecryptionSerializer):
+    a = serializers.IntegerField()
+    b = serializers.IntegerField()
+
 class SteganographyEncryptionSerializer(serializers.Serializer):
     text = serializers.CharField()
     image = serializers.ImageField()

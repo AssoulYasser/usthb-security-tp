@@ -39,6 +39,13 @@ class ChatConsumer(WebsocketConsumer):
                     else:
                         self.send(json.dumps(serializer.errors))
                         return
+                case "affine":
+                    serializer = AffineEncryptionSerializer(data=data)
+                    if serializer.is_valid():
+                        serializer.validated_data['type'] = "affine_meesage"
+                    else:
+                        self.send(json.dumps(serializer.errors))
+                        return
                 case _:
                     self.send(json.dumps(serializer.errors))
                     return
@@ -107,4 +114,34 @@ class ChatConsumer(WebsocketConsumer):
                 }
             )
         )
+
+    def affine_meesage(self, event):
+        sender = event['sender']
+        message = event['message']
+        date = event['date']
+        a = event['a']
+        b = event['b']
+        try:
+            affine_result = affine_encryption(text=message, a=a, b=b)
+            self.send(
+                text_data=json.dumps(
+                    {
+                        "sender": sender,
+                        "message": affine_result,
+                        "encryption_type":"affine",
+                        "date": str(date),
+                        "a": a,
+                        "b": b
+                    }
+                )
+            )
+        except Exception as e:
+            self.send(
+                text_data=json.dumps(
+                    {
+                        "error": e
+                    }
+                )
+            )
+
 
