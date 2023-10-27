@@ -34,6 +34,17 @@ def caesar_decryption(request):
     return Response(status=400, data=serializer.errors)
 
 @api_view(['POST'])
+def mirror_decryption(request):
+    data = request.data
+    serializer = MirrorDecryptionSerializer(data=data)
+    if serializer.is_valid():
+        return Response(
+            status=200,
+            data=mirror_decrypt_phrase(phrase=serializer.validated_data['message'], extra_char=serializer.validated_data['extra_char'])
+        )
+    return Response(status=400, data=serializer.errors)
+
+@api_view(['POST'])
 def image_steganography_encryption(request):
     image_path = tempo_path + 'encrypted_image.png'
     serializer = SteganographyEncryptionSerializer(data=request.data)

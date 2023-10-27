@@ -21,26 +21,35 @@ class ChatConsumer(WebsocketConsumer):
             match data['encryption_type']:
                 case "rotation":
                     if serializer.is_valid():
-                        data['type'] = "rotation_message"
+                        serializer.validated_data['type'] = "rotation_message"
                     else:
-                        raise Exception()
+                        self.send(json.dumps(serializer.errors))
+                        return
                 case "caesar":
                     serializer = CaesarEncryptionSerializer(data=data)
                     if serializer.is_valid():
-                        data['type'] = "caesar_message"
+                        serializer.validated_data['type'] = "caesar_message"
                     else:
-                        raise Exception()
+                        self.send(json.dumps(serializer.errors))
+                        return
+                case "mirror":
+                    serializer = MirrorEncryptionSerializer(data=data)
+                    if serializer.is_valid():
+                        serializer.validated_data['type'] = "mirror_message"
+                    else:
+                        self.send(json.dumps(serializer.errors))
+                        return
                 case _:
-                    self.send(serializer.errors)
+                    self.send(json.dumps(serializer.errors))
                     return
                 
             async_to_sync(self.channel_layer.group_send)(
                 self.room_group_name,
-                data
+                serializer.validated_data
             )
         else:
             self.send(json.dumps(serializer.errors))
-    
+
     def rotation_message(self, event):
         sender = event['sender']
         message = event['message']
@@ -54,7 +63,7 @@ class ChatConsumer(WebsocketConsumer):
                     "message": left_rotation(text=message) if direction == 'left' else right_rotation(text=message),
                     "direction": direction,
                     "encryption_type":"rotation",
-                    "date": date
+                    "date": str(date)
                 }
             )
         )
@@ -74,8 +83,26 @@ class ChatConsumer(WebsocketConsumer):
                     "direction": direction,
                     "caesar_value": caesar_value,
                     "encryption_type":"caesar",
-                    "date": date
+                    "date": str(date)
                 }
             )
         )
     
+    def mirror_message(self, event):
+        sender = event['sender']
+        message = event['message']
+        date = event['date']
+        extra_char = event['extra_char']
+
+        self.send(
+            text_data=json.dumps(
+                {
+                    "sender": sender,
+                    "message": mirror_encrypt_phrase(phrase=message, extra_char=extra_char),
+                    "encryption_type":"mirror",
+                    "date": str(date),
+                    "extra_char": extra_char
+                }
+            )
+        )
+
