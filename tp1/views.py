@@ -2,6 +2,7 @@ from django.http import HttpResponse
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .encryptions import *
+from .password import *
 from .serializers import *
 from .steganography import hide_text, show_text
 
@@ -56,3 +57,19 @@ def image_steganography_decryption(request):
         return Response(status=200, data={"message": show_text(image)})
     return Response(status=400, data=serializer.errors)
     
+@api_view(['POST'])
+def password_attack(request):
+    data = request.data
+    serializer = PasswordAttackSerializer(data=data)
+
+    if serializer.is_valid():
+        password = data['password']
+        if is_case_1(password):
+            return Response(status=200, data=dict_password_1_case(password=password))
+        elif is_case_2(password):
+            return Response(status=200, data=dict_password_2_case(password=password))
+        elif is_case_3(password):
+            return Response(status=200, data=force_brut_password_3_case(password=password))
+        else:
+            return Response(status=400, data={'error': "your password doesn't match any type"})
+    return Response(status=400, data=serializer.errors)

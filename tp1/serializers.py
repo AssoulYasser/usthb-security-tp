@@ -30,3 +30,6 @@ class SteganographyEncryptionSerializer(serializers.Serializer):
 
 class SteganographyDecryptionSerializer(serializers.Serializer):
     image = serializers.ImageField()
+
+class PasswordAttackSerializer(serializers.Serializer):
+    password = serializers.CharField()
