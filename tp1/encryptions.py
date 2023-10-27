@@ -1,28 +1,47 @@
 import string
 import random
 
-def left_caesar(text, shift):
-    decrypt_text = ""
-    for character in text:
-        if 'a' <= character <= 'z':
-            new_index = (ord(character) - ord('a') - shift) % 26
-            decrypted_character = chr(ord('a') + new_index)
-            decrypt_text += decrypted_character
-        else:
-            decrypt_text += character
-    return decrypt_text
-
-def right_caesar(text, shift):
+def caesar_encrypt(text, shift, direction):
+    if ((shift% 26)==0): 
+        shift = 25
     encrypted_text = ""
-    for character in text:
-        if 'a' <= character <= 'z':
-            new_index = (ord(character) - ord('a') + shift) % 26
-            encrypted_character = chr(ord('a') + new_index)
-            encrypted_text += encrypted_character
+    for char in text:
+        if char.isalpha():
+            if char.isupper():
+                if(direction == 'right'):
+                     encrypted_char = chr(((ord(char) - ord('A') + shift) % 26) + ord('A'))
+                elif(direction == 'left'): 
+                    encrypted_char = chr(((ord(char) - ord('A') - shift) % 26) + ord('A'))
+            elif char.islower():
+                if(direction == 'right'):
+                    encrypted_char = chr(((ord(char) - ord('a') + shift) % 26) + ord('a'))
+                elif(direction == 'left'): 
+                    encrypted_char = chr(((ord(char) - ord('a') - shift) % 26) + ord('a'))
         else:
-            encrypted_text += character
+            encrypted_char = char  # Conserve les caractères spéciaux inchangés
+        encrypted_text += encrypted_char
     return encrypted_text
 
+def caesar_decrypt(encrypted_text, shift,direction):
+    if ((shift% 26)==0): 
+        shift = 25
+    decrypted_text = ""
+    for char in encrypted_text:
+        if char.isalpha():
+            if char.isupper():
+                if(direction == 'right'):
+                    decrypted_char = chr(((ord(char) - ord('A') - shift) % 26) + ord('A'))
+                elif(direction == 'left'): 
+                    decrypted_char = chr(((ord(char) - ord('A') + shift) % 26) + ord('A'))
+            elif char.islower():
+                if(direction == 'right'):
+                    decrypted_char = chr(((ord(char) - ord('a') - shift) % 26) + ord('a'))
+                elif(direction == 'left'): 
+                    decrypted_char = chr(((ord(char) -ord('a') + shift) % 26) +ord('a'))
+        else:
+            decrypted_char = char  # Conserve les caractères spéciaux inchangés
+        decrypted_text += decrypted_char
+    return decrypted_text
 
 def right_rotation(text):
     return text[-1:] + text[:-1]

@@ -28,7 +28,7 @@ def caesar_decryption(request):
     if serializer.is_valid():
         return Response(
             status=200,
-            data=left_caesar(data['message'], data['caesar_value']) if data['direction'] == 'right' else right_caesar(data['message'], data['caesar_value'])
+            data=caesar_decrypt(encrypted_text=data['message'], shift=data['caesar_value'], direction=data['direction'])
         )
     
     return Response(status=400, data=serializer.errors)

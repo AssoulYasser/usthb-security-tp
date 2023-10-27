@@ -79,7 +79,7 @@ class ChatConsumer(WebsocketConsumer):
             text_data=json.dumps(
                 {
                     "sender": sender,
-                    "message": left_caesar(text=message, shift=caesar_value) if direction == 'left' else right_caesar(text=message, shift=caesar_value),
+                    "message": caesar_encrypt(text=message, shift=caesar_value, direction=direction),
                     "direction": direction,
                     "caesar_value": caesar_value,
                     "encryption_type":"caesar",
