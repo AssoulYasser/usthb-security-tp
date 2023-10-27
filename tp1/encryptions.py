@@ -1,3 +1,6 @@
+import string
+import random
+
 def left_caesar(text, shift):
     decrypt_text = ""
     for character in text:
@@ -27,6 +30,16 @@ def right_rotation(text):
 def left_rotation(text):
     return text[1:] + text[:1]
 
+def generate_random_string():
+    length = random.randint(1, 10)
+    # Define the characters to choose from
+    characters = string.ascii_letters + string.digits  # You can customize this based on your requirements
+
+    # Use random.choices to generate a random string of the desired length
+    random_string = ''.join(random.choices(characters, k=length))
+
+    return random_string
+
 def mirror_encrypt_word(word, extra_char):
     reversed_word = word[::-1]  # Reverse the word
     if word == reversed_word:  # If the reversed word is equal to the original word
@@ -40,7 +53,8 @@ def mirror_decrypt_word(word, extra_char):
     reversed_word = word[::-1]  # Reverse the word
     return reversed_word
 
-def mirror_encrypt_phrase(phrase, extra_char):
+def mirror_encrypt_phrase(phrase):
+    extra_char = generate_random_string()
     words = phrase.split()  # Split the string of characters into a list
     reversed_phrase = ''  # Initialize the reversed phrase
     for word in words:  # For each word in the words list
@@ -49,7 +63,7 @@ def mirror_encrypt_phrase(phrase, extra_char):
         word = mirror_encrypt_word(word, extra_char)  # Encrypt each word
         reversed_phrase = reversed_phrase + " " + word  # Assemble all the words
     reversed_phrase = reversed_phrase[1:]  # Remove the initial space
-    return reversed_phrase
+    return {"encrypted_data":reversed_phrase, "extra_char": extra_char}
 
 def mirror_decrypt_phrase(phrase, extra_char):
     words = phrase.split()
