@@ -94,11 +94,37 @@ def caesar_decrypt(encrypted_text, shift,direction):
         decrypted_text += decrypted_char
     return decrypted_text
 
-def right_rotation(text):
-    return text[-1:] + text[:-1]
+def cryptage_rotation(sentence,direction):
+    words = sentence.split()  # Split the sentence into words
+    rotated_words = []
 
-def left_rotation(text):
-    return text[1:] + text[:1]
+    for word in words:
+
+            if(direction == 'left'):
+                rotated_word = word[1:] + word[:1]  # Left rotation
+                rotated_words.append(rotated_word)
+            elif(direction == 'right'): 
+                rotated_word = word[-1:] + word[:-1] # right rotation
+                rotated_words.append(rotated_word)
+
+    rotated_sentence = " ".join(rotated_words)
+    return rotated_sentence
+
+def decryptage_rotation(sentence, direction):
+    words = sentence.split()  # Split the sentence into words
+    rotated_words = []
+
+    for word in words:
+  
+            if(direction == 'left'):
+                rotated_word = word[-1:] + word[:-1] # right rotation
+                rotated_words.append(rotated_word)
+                
+            elif(direction == 'right'):
+                rotated_word = word[1:] + word[:1]  # Left rotation
+                rotated_words.append(rotated_word)
+    rotated_sentence = " ".join(rotated_words)
+    return rotated_sentence
 
 def generate_random_string():
     length = random.randint(1, 10)

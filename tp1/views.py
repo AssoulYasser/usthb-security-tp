@@ -16,7 +16,7 @@ def rotation_decryption_request(request):
     if serializer.is_valid():
         return Response(
             status=200,
-            data=left_rotation(data['message']) if data['direction'] == 'right' else left_rotation(data['message'])
+            data=decryptage_rotation(sentence=data['message'], direction=data['direction'])
         )
     
     return Response(status=400, data=serializer.errors)

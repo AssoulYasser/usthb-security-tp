@@ -20,6 +20,7 @@ class ChatConsumer(WebsocketConsumer):
         if serializer.is_valid():
             match data['encryption_type']:
                 case "rotation":
+                    serializer = RotationEncryptionSerializer(data=data)
                     if serializer.is_valid():
                         serializer.validated_data['type'] = "rotation_message"
                     else:
@@ -67,7 +68,7 @@ class ChatConsumer(WebsocketConsumer):
             text_data=json.dumps(
                 {
                     "sender": sender,
-                    "message": left_rotation(text=message) if direction == 'left' else right_rotation(text=message),
+                    "message": cryptage_rotation(sentence=message, direction=direction),
                     "direction": direction,
                     "encryption_type":"rotation",
                     "date": str(date)
