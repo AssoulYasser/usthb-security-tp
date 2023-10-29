@@ -71,7 +71,11 @@ class ChatConsumer(WebsocketConsumer):
                     "message": cryptage_rotation(sentence=message, direction=direction),
                     "direction": direction,
                     "encryption_type":"rotation",
-                    "date": str(date)
+                    "date": str(date),
+                    "caesar_value": None,
+                    "extra_char": None,
+                    "a": None,
+                    "b": None
                 }
             )
         )
@@ -91,7 +95,10 @@ class ChatConsumer(WebsocketConsumer):
                     "direction": direction,
                     "caesar_value": caesar_value,
                     "encryption_type":"caesar",
-                    "date": str(date)
+                    "date": str(date),
+                    "extra_char": None,
+                    "a": None,
+                    "b": None
                 }
             )
         )
@@ -111,7 +118,11 @@ class ChatConsumer(WebsocketConsumer):
                     "message": encrypted_message,
                     "encryption_type":"mirror",
                     "date": str(date),
-                    "extra_char": extra_char
+                    "extra_char": extra_char,
+                    "direction": None,
+                    "caesar_value": None,
+                    "a": None,
+                    "b": None
                 }
             )
         )
@@ -132,7 +143,10 @@ class ChatConsumer(WebsocketConsumer):
                         "encryption_type":"affine",
                         "date": str(date),
                         "a": a,
-                        "b": b
+                        "b": b,
+                        "direction": None,
+                        "caesar_value": None,
+                        "extra_char": None
                     }
                 )
             )
