@@ -159,7 +159,7 @@ class ChatConsumer(WebsocketConsumer):
                 text_data=json.dumps(
                     {
                         "sender": sender,
-                        "message": affine_result,
+                        "message": None,
                         "encryption_type":"affine",
                         "date": str(date),
                         "extra_char": None,
@@ -167,7 +167,7 @@ class ChatConsumer(WebsocketConsumer):
                         "caesar_value": None,
                         "a": a,
                         "b": b,
-                        "error": e
+                        "error": str(e)
                     }
                 )
             )
