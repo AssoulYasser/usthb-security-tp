@@ -68,14 +68,15 @@ class ChatConsumer(WebsocketConsumer):
             text_data=json.dumps(
                 {
                     "sender": sender,
-                    "message": cryptage_rotation(sentence=message, direction=direction),
-                    "direction": direction,
+                    "message": cryptage_rotation(message, direction),
                     "encryption_type":"rotation",
                     "date": str(date),
-                    "caesar_value": None,
                     "extra_char": None,
+                    "direction": direction,
+                    "caesar_value": None,
                     "a": None,
-                    "b": None
+                    "b": None,
+                    "error": None
                 }
             )
         )
@@ -91,14 +92,15 @@ class ChatConsumer(WebsocketConsumer):
             text_data=json.dumps(
                 {
                     "sender": sender,
-                    "message": caesar_encrypt(text=message, shift=caesar_value, direction=direction),
-                    "direction": direction,
-                    "caesar_value": caesar_value,
+                    "message": caesar_encrypt(message, caesar_value, direction),
                     "encryption_type":"caesar",
                     "date": str(date),
                     "extra_char": None,
+                    "direction": direction,
+                    "caesar_value": caesar_value,
                     "a": None,
-                    "b": None
+                    "b": None,
+                    "error": None
                 }
             )
         )
@@ -122,7 +124,8 @@ class ChatConsumer(WebsocketConsumer):
                     "direction": None,
                     "caesar_value": None,
                     "a": None,
-                    "b": None
+                    "b": None,
+                    "error": None
                 }
             )
         )
@@ -142,11 +145,12 @@ class ChatConsumer(WebsocketConsumer):
                         "message": affine_result,
                         "encryption_type":"affine",
                         "date": str(date),
-                        "a": a,
-                        "b": b,
+                        "extra_char": None,
                         "direction": None,
                         "caesar_value": None,
-                        "extra_char": None
+                        "a": a,
+                        "b": b,
+                        "error": None
                     }
                 )
             )
@@ -154,6 +158,15 @@ class ChatConsumer(WebsocketConsumer):
             self.send(
                 text_data=json.dumps(
                     {
+                        "sender": sender,
+                        "message": affine_result,
+                        "encryption_type":"affine",
+                        "date": str(date),
+                        "extra_char": None,
+                        "direction": None,
+                        "caesar_value": None,
+                        "a": a,
+                        "b": b,
                         "error": e
                     }
                 )
