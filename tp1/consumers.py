@@ -34,7 +34,7 @@ class ChatConsumer(WebsocketConsumer):
                         self.send(json.dumps(serializer.errors))
                         return
                 case "mirror":
-                    serializer = DefaultEncryptionSerializer(data=data)
+                    serializer = MirrorEncryptionSerializer(data=data)
                     if serializer.is_valid():
                         serializer.validated_data['type'] = "mirror_message"
                     else:
@@ -74,6 +74,7 @@ class ChatConsumer(WebsocketConsumer):
                     "extra_char": None,
                     "direction": direction,
                     "caesar_value": None,
+                    "extra_char": None,
                     "a": None,
                     "b": None,
                     "error": None
@@ -98,6 +99,7 @@ class ChatConsumer(WebsocketConsumer):
                     "extra_char": None,
                     "direction": direction,
                     "caesar_value": caesar_value,
+                    "extra_char": None,
                     "a": None,
                     "b": None,
                     "error": None
@@ -109,20 +111,19 @@ class ChatConsumer(WebsocketConsumer):
         sender = event['sender']
         message = event['message']
         date = event['date']
-        mirror_encryption = mirror_encrypt_phrase(phrase=message)
-        encrypted_message = mirror_encryption['encrypted_data']
-        extra_char = mirror_encryption['extra_char']
+        extra_char = event['extra_char']
+        mirror_encryption = mirror_encrypt_phrase(phrase=message, extra_char=extra_char)
 
         self.send(
             text_data=json.dumps(
                 {
                     "sender": sender,
-                    "message": encrypted_message,
+                    "message": mirror_encryption,
                     "encryption_type":"mirror",
                     "date": str(date),
-                    "extra_char": extra_char,
                     "direction": None,
                     "caesar_value": None,
+                    "extra_char": extra_char,
                     "a": None,
                     "b": None,
                     "error": None
@@ -148,6 +149,7 @@ class ChatConsumer(WebsocketConsumer):
                         "extra_char": None,
                         "direction": None,
                         "caesar_value": None,
+                        "extra_char": None,
                         "a": a,
                         "b": b,
                         "error": None
@@ -159,17 +161,16 @@ class ChatConsumer(WebsocketConsumer):
                 text_data=json.dumps(
                     {
                         "sender": sender,
-                        "message": affine_result,
+                        "message": None,
                         "encryption_type":"affine",
                         "date": str(date),
                         "extra_char": None,
                         "direction": None,
                         "caesar_value": None,
+                        "extra_char": None,
                         "a": a,
                         "b": b,
-                        "error": e
+                        "error": str(e)
                     }
                 )
             )
-
-

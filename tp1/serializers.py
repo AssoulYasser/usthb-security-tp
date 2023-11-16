@@ -24,6 +24,9 @@ class CaesarDecryptionSerializer(DefaultDecryptionSerializer):
     direction = serializers.ChoiceField(choices=ENCRYPTION_DIRECTIONS)
     caesar_value = serializers.IntegerField()
 
+class MirrorEncryptionSerializer(DefaultEncryptionSerializer):
+    extra_char = serializers.CharField()
+
 class MirrorDecryptionSerializer(DefaultDecryptionSerializer):
     extra_char = serializers.CharField()
 

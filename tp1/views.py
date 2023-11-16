@@ -49,10 +49,16 @@ def affine_decryption_request(request):
     data = request.data
     serializer = AffineDecryptionSerializer(data=data)
     if serializer.is_valid():
-        return Response(
-            status=200,
-            data=affine_decryption(data['message'], data['a'], data['b'])
-        )
+        try:
+            return Response(
+                status=200,
+                data=affine_decryption(data['message'], data['a'], data['b'])
+            )
+        except Exception as e:
+            return Response(
+                status=400,
+                data=str(e)
+            )
     return Response(status=400, data=serializer.errors)
 
 @api_view(['POST'])
