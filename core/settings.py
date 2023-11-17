@@ -40,8 +40,11 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'channels',
     'rest_framework',
-    'tp1'
+    'tp1',
+    'tp3'
 ]
+
+AUTH_USER_MODEL = "tp3.MyUser"
 
 ASGI_APPLICATION = 'core.asgi.application'
 
