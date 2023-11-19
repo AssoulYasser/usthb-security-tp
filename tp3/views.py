@@ -20,11 +20,6 @@ def login(request):
     except Exception as E:
         return Response(status=400, data={'error': str(E)})
 
-def start_2fa(subject, message, receipient):
-    print('before')
-    
-    print('after')
-
 @api_view(['POST'])
 def two_factor_authentication(request):
     subject = ''
