@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from .serializers import *
 from django.contrib.auth.hashers import check_password
 from django.core.mail import send_mail
-from django.conf import settings
+import random
 
 @api_view(['POST'])
 def login(request):
@@ -21,15 +21,19 @@ def login(request):
         return Response(status=400, data={'error': str(E)})
 
 @api_view(['POST'])
-def two_factor_authentication(request):
-    subject = ''
-    message = ''
-    to = ''
-    send_mail(
-        subject=subject,
-        message=message,
-        from_email='settings.EMAIL_HOST_USER',
-        recipient_list=[to],
-        fail_silently=False
-    )
-    return Response(status=200, data={'done'})
+def email_two_factor_authentication(request):
+    data = request.data
+    serializer = EmailTwoFactorAuthenticationSerializer(data=data)
+    if serializer.is_valid():
+        subject = 'no-reply'
+        message = str(random.randint(11111, 99999))
+        receiver_email = data['receiver_email']
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email='settings.EMAIL_HOST_USER',
+            recipient_list=[receiver_email],
+            fail_silently=False
+        )
+        return Response(status=200)
+    return Response(status=400, data=serializer.error_messages)

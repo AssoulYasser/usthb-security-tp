@@ -8,3 +8,6 @@ class MyUserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'password': {'write_only': True}
         }
+
+class EmailTwoFactorAuthenticationSerializer(serializers.Serializer):
+    receiver_email = serializers.EmailField()
