@@ -143,3 +143,10 @@ EMAIL_PORT = 587  # or 465 for SSL
 EMAIL_USE_TLS = True  # or EMAIL_USE_SSL = True if using port 465
 EMAIL_HOST_USER = local_settings.LOCAL_EMAIL_HOST_USER  # Enter your Gmail address
 EMAIL_HOST_PASSWORD = local_settings.LOCAL_EMAIL_HOST_PASSWORD  # Enter your Gmail password or App password
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'unique-snowflake',
+    }
+}
