@@ -11,3 +11,6 @@ class MyUserSerializer(serializers.ModelSerializer):
 
 class EmailTwoFactorAuthenticationSerializer(serializers.Serializer):
     receiver_email = serializers.EmailField()
+
+class VerifyEmailTwoFactorAuthenticationSerializer(EmailTwoFactorAuthenticationSerializer):
+    received_code = serializers.IntegerField()

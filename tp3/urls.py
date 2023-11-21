@@ -3,6 +3,6 @@ from . import views
 
 urlpatterns = [
     path('login/', views.login),
-    path('2fa/', views.email_two_factor_authentication),
-    path('test_cache/', views.get_cached_data),
-]
+    path('email-two-factor-authentication/', views.email_two_factor_authentication),
+    path('verify-email-two-factor-authentication/', views.verify_email_two_factory_authentication),
+]   
