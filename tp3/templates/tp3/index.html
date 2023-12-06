@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title>TP3</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        {% load static %}
+        <link rel="stylesheet" href="{% static 'css/tp3.css' %}">
+        <script src="{% static 'js/index.js' %}"></script>
+    </head>
+    <body>
+        <div class='container' id='users_container'>
+            {% include "tp3/users.html" %}
+        </div>
+
+        <dialog id='add_user_dialog'>
+            {% include "tp3/add-user.html" %}
+        </dialog>
+
+        <dialog id='add_user_response_dialog'>
+            {% if message.success %}
+                {{message.data}}
+            {% else %}
+                {{message.data}}
+            {% endif %}
+            <form method='GET'>
+                <button class='close-btn'>close</button>
+            </form>
+        </dialog>
+        
+        {% if message %}
+            <script>
+                document.addEventListener(
+                    'DOMContentLoaded', () => {
+                        let addUserResponseDialog = document.getElementById('add_user_response_dialog')
+                        addUserResponseDialog.showModal()
+                    }
+                )
+            </script>
+        {% endif %}
+    </body>
+</html>

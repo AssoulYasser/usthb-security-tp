@@ -1,11 +1,58 @@
-from django.http import HttpResponse
+from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import *
+from .forms import *
+from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from django.core.mail import send_mail
 import random
 from django.core.cache import cache
+from .decorators import *
+
+def register(data):
+    serializer = MyUserSerializer(data=data)
+    if not serializer.is_valid():
+        raise ValueError(serializer.error_message)
+    serializer.save()
+    
+
+@ALLOW_ONLY_LOCAL_HOST
+def users(request):
+    all_users = MyUser.objects.all()
+    add_user_form = MyUserForm()
+    context = {
+        'users': all_users,
+        'add_user_form': add_user_form,
+        'message': None
+    }
+
+    if request.method == 'POST':
+        form_result = MyUserForm(request.POST)
+        if form_result.is_valid():
+            data = form_result.cleaned_data
+            try:
+                register(data)
+                user = data['email']
+                message = {
+                    'success': True,
+                    'data': f'{user} has been saved successfully'
+                }
+                context['message'] = message
+                return render(request, 'tp3/index.html', context)
+            except Exception as e:
+                message = {
+                    'success': False,
+                    'data': f'error occured: {e}'
+                }
+                context['message'] = message
+                render(request, 'tp3/index.html', context)
+
+    if request.method == 'GET':
+        context['message'] = None
+        return render(request, 'tp3/index.html', context)
+
+    return render(request, 'tp3/index.html', context)
 
 @api_view(['POST'])
 def login(request):

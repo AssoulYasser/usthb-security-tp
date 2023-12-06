@@ -1,0 +1,26 @@
+<div class='users_header'>
+    <h1>USERS</h1>
+    <button id='add_user_button' class='add_button'>ADD USER</button>
+</div>
+<div id='users_table'>
+    <table>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+        </tr>
+        {% for user in users %}
+            <tr>
+                <td>
+                    NULL
+                </td>
+                <td>
+                    NULL
+                </td>
+                <td>
+                    {{user.email}}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>    
+</div>

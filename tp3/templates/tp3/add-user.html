@@ -1,0 +1,7 @@
+<div id='add_user_form_container'>
+    <form method='POST'>
+        {% csrf_token %}
+        {{ add_user_form.as_p }}
+        <button class='save_btn'>SAVE</button>
+    </form>
+</div>
