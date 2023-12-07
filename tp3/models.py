@@ -3,6 +3,8 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from . import managers
 
 class MyUser(AbstractBaseUser, PermissionsMixin):
+    first_name = models.CharField(max_length=20)
+    last_name = models.CharField(max_length=20)
     email = models.EmailField(primary_key=True)
     password = models.CharField(max_length=255)
     is_staff = models.BooleanField(default=False)
