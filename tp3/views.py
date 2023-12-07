@@ -15,7 +15,6 @@ def register(data):
     if not serializer.is_valid():
         raise ValueError(serializer.error_message)
     serializer.save()
-    
 
 @ALLOW_ONLY_LOCAL_HOST
 def users(request):
@@ -64,7 +63,7 @@ def login(request):
         if check_password(password, user.password):
             return Response(status=200, data={'user' : 'found'})
         else:
-            return Response(status=200, data={'user' : 'wrong password'})   
+            return Response(status=401, data={'user' : 'wrong password'})   
     except Exception as E:
         return Response(status=400, data={'error': str(E)})
 

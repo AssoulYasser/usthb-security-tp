@@ -9,6 +9,9 @@ class MyUserSerializer(serializers.ModelSerializer):
             'password': {'write_only': True}
         }
 
+    def create(self, validated_data):
+        return MyUser.objects.create_user(**validated_data)
+
 class EmailTwoFactorAuthenticationSerializer(serializers.Serializer):
     receiver_email = serializers.EmailField()
 

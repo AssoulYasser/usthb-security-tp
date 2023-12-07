@@ -7,6 +7,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     last_name = models.CharField(max_length=20)
     email = models.EmailField(primary_key=True)
     password = models.CharField(max_length=255)
+    mac_address = models.CharField(max_length=17, unique=True)
     is_staff = models.BooleanField(default=False)
     last_login = models.DateTimeField(auto_now_add=True)
     
