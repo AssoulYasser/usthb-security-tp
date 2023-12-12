@@ -6,4 +6,5 @@ urlpatterns = [
     path('login/', views.login),
     path('email-two-factor-authentication/', views.email_two_factor_authentication),
     path('verify-email-two-factor-authentication/', views.verify_email_two_factory_authentication),
+    path('face-recognition-factor/', views.face_recognition_factor),
 ]   

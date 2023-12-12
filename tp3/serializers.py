@@ -10,10 +10,14 @@ class MyUserSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
+        
         return MyUser.objects.create_user(**validated_data)
 
 class EmailTwoFactorAuthenticationSerializer(serializers.Serializer):
-    receiver_email = serializers.EmailField()
+    email = serializers.EmailField()
 
 class VerifyEmailTwoFactorAuthenticationSerializer(EmailTwoFactorAuthenticationSerializer):
-    received_code = serializers.IntegerField()
+    code = serializers.IntegerField()
+
+class FaceRecognitionFactorSerializer(EmailTwoFactorAuthenticationSerializer):
+    image = serializers.ImageField()

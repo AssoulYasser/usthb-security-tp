@@ -13,7 +13,13 @@ class MyUserManage(BaseUserManager):
         if not re.match(pattern, mac):
             print('not match')
             raise Exception('MAC ADDRESS IS UNCORRECT')
-    
+
+    def validate_password(self, password):
+        pattern = r'^(?=.*[A-Z])(?=.*[\W_]).{7,}$'
+
+        if not re.match(pattern, password):
+            raise Exception(f"Password error: WE WILL EXPLAIN IT LATER")    
+
     def create_user(self, **extra_fields):
         try:
             self.user_condition_satisfied(**extra_fields)
@@ -24,9 +30,11 @@ class MyUserManage(BaseUserManager):
 
             self.validate_mac_address(mac_address)
 
+            self.validate_password(password)
+            
             extra_fields.pop('email')
             extra_fields.pop('password')
-            
+
             user = self.model(email=email, **extra_fields)
             user.set_password(password)
 

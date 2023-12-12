@@ -9,6 +9,9 @@ from django.core.mail import send_mail
 import random
 from django.core.cache import cache
 from .decorators import *
+from deepface import DeepFace
+from PIL import Image
+import os
 
 def register(data):
     serializer = MyUserSerializer(data=data)
@@ -27,7 +30,7 @@ def users(request):
     }
 
     if request.method == 'POST':
-        form_result = MyUserForm(request.POST)
+        form_result = MyUserForm(request.POST, request.FILES)
         if form_result.is_valid():
             data = form_result.cleaned_data
             try:
@@ -46,6 +49,13 @@ def users(request):
                 }
                 context['message'] = message
                 render(request, 'tp3/index.html', context)
+        else:
+            message = {
+                    'success': False,
+                    'data': f'error occured: {form_result.errors.as_data()}'
+            }
+            context['message'] = message
+            render(request, 'tp3/index.html', context)
 
     if request.method == 'GET':
         context['message'] = None
@@ -65,7 +75,7 @@ def login(request):
         else:
             return Response(status=401, data={'user' : 'wrong password'})   
     except Exception as E:
-        return Response(status=400, data={'error': str(E)})
+        return Response(status=404, data={'error': 'user not found'})
 
 @api_view(['POST'])
 def email_two_factor_authentication(request):
@@ -74,18 +84,18 @@ def email_two_factor_authentication(request):
     if serializer.is_valid():
         subject = 'no-reply'
         message = str(random.randint(11111, 99999))
-        cache.set(data['receiver_email'], message, timeout=90)
-        receiver_email = data['receiver_email']
+        cache.set(data['email'], message, timeout=90)
+        email = data['email']
         try:
             mail_result = send_mail(
                 subject=subject,
                 message=message,
                 from_email='settings.EMAIL_HOST_USER',
-                recipient_list=[receiver_email],
+                recipient_list=[email],
                 fail_silently=False
             )
             if mail_result:
-                cache.set(receiver_email, message, timeout=90)
+                cache.set(email, message, timeout=90)
                 return Response(status=200, data={'code':'mail has been sent successfully'})
             return Response(status=500, data={'error':'mail failed to be sent'})
         except Exception as E:
@@ -97,10 +107,37 @@ def verify_email_two_factory_authentication(request):
     data = request.data
     serializer = VerifyEmailTwoFactorAuthenticationSerializer(data=data)
     if serializer.is_valid():
-        received_code = data['received_code']
-        receiver_email = data['receiver_email']
-        if received_code == cache.get(receiver_email):
-            cache.delete(receiver_email)
+        code = data['code']
+        email = data['email']
+        if code == cache.get(email):
+            cache.delete(email)
             return Response(status=200, data={'authorized': True})
         return Response(status=400, data={'authorized': False})
     return Response(status=400, data={'error':serializer.error_messages})
+
+def save_tempo_image(image, email):
+    save_path = f'tp3/tempo/'
+    if not os.path.exists(save_path):
+        print('gg')
+        os.makedirs(save_path)
+    image_format = Image.open(image).format
+    image_path = save_path + email.split('@')[0] + f'.{image_format}'
+    Image.open(image).save(image_path)
+    return image_path
+
+@api_view(['POST'])
+def face_recognition_factor(request):
+    data = request.data
+    serializer = FaceRecognitionFactorSerializer(data=data)
+    if serializer.is_valid():
+        email = data['email']
+        image = data['image']
+        user = MyUser.objects.get(email=email)
+        user_photo_path = user.personal_image
+        path_to_sent_image = save_tempo_image(image=image, email=email)
+        try:
+            verify = DeepFace.verify(img1_path=str(user_photo_path), img2_path=path_to_sent_image, model_name='VGG-Face')
+        except Exception as E:
+            return Response(status=400, data={'error': str(E)})
+        return Response(status=200, data={'is_valid': str(verify['verified'])})
+    return Response(status=400, data={'error': serializer.error_messages})
