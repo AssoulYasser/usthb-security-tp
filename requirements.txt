@@ -5,3 +5,4 @@ stegano==0.11.2
 python-memcached==1.59
 deepface==0.0.80
 pillow==9.5.0
+cryptography==41.0.5

@@ -12,6 +12,7 @@ from .decorators import *
 from deepface import DeepFace
 from PIL import Image
 import os
+from . import rsa
 
 def register(data):
     serializer = MyUserSerializer(data=data)
@@ -64,23 +65,43 @@ def users(request):
     return render(request, 'tp3/index.html', context)
 
 @api_view(['POST'])
+def get_rsa_key(request):
+    data = request.data
+    serializer = EmailSerializer(data=data)
+    if serializer.is_valid():
+        email = data['email']
+        try:
+            user = MyUser.objects.get(email=email)
+            rsa_code = user.public_key
+            return Response(status=200, data={'public_key': rsa_code})
+        except:
+            return Response(status=404, data={'error': 'user not found'})
+    return Response(status=400, data={'error': serializer.error_messages})
+
+@api_view(['POST'])
 def login(request):
     email = request.data['email']
     password = request.data['password']
 
     try:
         user = MyUser.objects.get(email=email)
-        if check_password(password, user.password):
-            return Response(status=200, data={'user' : 'found'})
-        else:
-            return Response(status=401, data={'user' : 'wrong password'})   
     except Exception as E:
         return Response(status=404, data={'error': 'user not found'})
+
+    try:
+        password = rsa.dectyption(private_key_der_b64=user.private_key, encrypted_data_b64=password)
+    except Exception as E:
+        return Response(status=404, data={'error': 'decryption failed'})
+    
+    if check_password(password, user.password):
+        return Response(status=200)
+    else:
+        return Response(status=401)   
 
 @api_view(['POST'])
 def email_two_factor_authentication(request):
     data = request.data
-    serializer = EmailTwoFactorAuthenticationSerializer(data=data)
+    serializer = EmailSerializer(data=data)
     if serializer.is_valid():
         subject = 'no-reply'
         message = str(random.randint(11111, 99999))

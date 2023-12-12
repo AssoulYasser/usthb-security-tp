@@ -13,11 +13,11 @@ class MyUserSerializer(serializers.ModelSerializer):
         
         return MyUser.objects.create_user(**validated_data)
 
-class EmailTwoFactorAuthenticationSerializer(serializers.Serializer):
+class EmailSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
-class VerifyEmailTwoFactorAuthenticationSerializer(EmailTwoFactorAuthenticationSerializer):
+class VerifyEmailTwoFactorAuthenticationSerializer(EmailSerializer):
     code = serializers.IntegerField()
 
-class FaceRecognitionFactorSerializer(EmailTwoFactorAuthenticationSerializer):
+class FaceRecognitionFactorSerializer(EmailSerializer):
     image = serializers.ImageField()
