@@ -8,7 +8,7 @@ class AuthenticationStatus(Enum):
     FACE_RECOGNITION = 'FACE_RECOGNITION'
     ANDROID_ID = 'ANDROID_ID'
 
-AUTHENTICATION_PROCCESS_STATUS = 5*60
+AUTHENTICATION_PROCCESS_STATUS = 10*60
 
 def request_authentication_cache_key(email, ip):
     try:
@@ -26,18 +26,18 @@ def get_private_key(email, ip):
 
 def validate_status(email, ip, status):
     key = request_authentication_cache_key(email, ip)
-    cache.set(key + status, timeout= AUTHENTICATION_PROCCESS_STATUS)
+    cache.set(key + status.value, True, timeout= AUTHENTICATION_PROCCESS_STATUS)
 
 def check_authentication_status(email, ip, status):
-    key = request_authentication_cache_key(email, ip)
+    key = request_authentication_cache_key(email, ip) + status.value
     
     if cache.get(key) is None:
         return False
     
-    ANDROID_ID = cache.get(key + AuthenticationStatus.ANDROID_ID)
-    FACE_RECOGNITION = cache.get(key + AuthenticationStatus.FACE_RECOGNITION)
-    TWO_FAC_AUTH = cache.get(key + AuthenticationStatus.TWO_FAC_AUTH)
-    PASSWORD = cache.get(key + AuthenticationStatus.PASSWORD)
+    ANDROID_ID = cache.get(key + AuthenticationStatus.ANDROID_ID.value)
+    FACE_RECOGNITION = cache.get(key + AuthenticationStatus.FACE_RECOGNITION.value)
+    TWO_FAC_AUTH = cache.get(key + AuthenticationStatus.TWO_FAC_AUTH.value)
+    PASSWORD = cache.get(key + AuthenticationStatus.PASSWORD.value)
 
     match status:
         case AuthenticationStatus.ANDROID_ID:
@@ -50,11 +50,11 @@ def check_authentication_status(email, ip, status):
             return PASSWORD is not None
     
 def set_2fa_code(email, ip, code):
-    key = request_authentication_cache_key(email, ip) + AuthenticationStatus.TWO_FAC_AUTH_CODE
+    key = request_authentication_cache_key(email, ip) + AuthenticationStatus.TWO_FAC_AUTH_CODE.value
     cache.set(key, code, timeout=90)
 
 def is_2fa_code_valid(email, ip, code):
-    key = request_authentication_cache_key(email, ip) + AuthenticationStatus.TWO_FAC_AUTH_CODE
+    key = request_authentication_cache_key(email, ip) + AuthenticationStatus.TWO_FAC_AUTH_CODE.value
     if cache.get(key) == code:
         cache.delete(key)
         return True

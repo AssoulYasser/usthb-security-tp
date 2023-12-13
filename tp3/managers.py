@@ -10,10 +10,14 @@ class MyUserManage(BaseUserManager):
                 raise Exception('FIELD ARE NOT SATISFIED')    
 
     def validate_password(self, password):
-        pattern = r'^(?=.*[A-Z])(?=.*[\W_]).{7,}$'
+        pattern = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
 
         if not re.match(pattern, password):
-            raise Exception(f"Password error: WE WILL EXPLAIN IT LATER")    
+            raise Exception(f"Password error: \n# At least 8 characters"+
+                            "Contains at least one uppercase letter\n"+
+                            "Contains at least one lowercase letter\n"+
+                            "Contains at least one digit\n"+
+                            "Contains at least one special character (e.g., !@#$%^&*)")    
 
     def create_user(self, **extra_fields):
         try:
