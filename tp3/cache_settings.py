@@ -29,7 +29,7 @@ def validate_status(email, ip, status):
     cache.set(key + status.value, True, timeout= AUTHENTICATION_PROCCESS_STATUS)
 
 def check_authentication_status(email, ip, status):
-    key = request_authentication_cache_key(email, ip) + status.value
+    key = request_authentication_cache_key(email, ip)
 
     if cache.get(key) is None:
         return False
