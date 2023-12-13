@@ -30,7 +30,7 @@ def validate_status(email, ip, status):
 
 def check_authentication_status(email, ip, status):
     key = request_authentication_cache_key(email, ip) + status.value
-    
+
     if cache.get(key) is None:
         return False
     
@@ -41,13 +41,13 @@ def check_authentication_status(email, ip, status):
 
     match status:
         case AuthenticationStatus.ANDROID_ID:
-            return ANDROID_ID is not None and FACE_RECOGNITION is not None and TWO_FAC_AUTH is not None and PASSWORD is not None
+            return ANDROID_ID and FACE_RECOGNITION and TWO_FAC_AUTH and PASSWORD
         case AuthenticationStatus.FACE_RECOGNITION:
-            return FACE_RECOGNITION is not None and TWO_FAC_AUTH is not None and PASSWORD is not None
+            return FACE_RECOGNITION and TWO_FAC_AUTH and PASSWORD
         case AuthenticationStatus.TWO_FAC_AUTH:
-            return TWO_FAC_AUTH is not None and PASSWORD is not None
+            return TWO_FAC_AUTH and PASSWORD
         case AuthenticationStatus.PASSWORD:
-            return PASSWORD is not None
+            return PASSWORD
     
 def set_2fa_code(email, ip, code):
     key = request_authentication_cache_key(email, ip) + AuthenticationStatus.TWO_FAC_AUTH_CODE.value

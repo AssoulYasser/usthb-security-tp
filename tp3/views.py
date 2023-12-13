@@ -70,9 +70,13 @@ def users(request):
 def get_rsa_key(request):
     data = request.data
     serializer = EmailSerializer(data=data)
+    email = data['email']
     if serializer.is_valid():
         try:
-            email = data['email']
+            user = MyUser.objects.get(email=email)
+        except:
+            return Response(status=401)
+        try:
             ip = get_ip_address(request)
             private_key, public_key = rsa.generate_rsa_key_pair()
             cache_settings.set_private_key(email, ip, private_key)
@@ -119,7 +123,7 @@ def email_two_factor_authentication(request):
     email = data['email']
     ip = get_ip_address(request)
 
-    if cache_settings.check_authentication_status(email, ip, cache_settings.AuthenticationStatus.PASSWORD):
+    if not cache_settings.check_authentication_status(email, ip, cache_settings.AuthenticationStatus.PASSWORD):
         return Response(status=403)
 
     if serializer.is_valid():
@@ -150,7 +154,7 @@ def verify_email_two_factory_authentication(request):
     email = data['email']
     ip = get_ip_address(request)
 
-    if cache_settings.check_authentication_status(email, ip, cache_settings.AuthenticationStatus.PASSWORD):
+    if not cache_settings.check_authentication_status(email, ip, cache_settings.AuthenticationStatus.PASSWORD):
         return Response(status=403)
 
     if serializer.is_valid():
@@ -180,7 +184,7 @@ def face_recognition_factor(request):
     email = data['email']
     ip = get_ip_address(request)
 
-    if cache_settings.check_authentication_status(email, ip, cache_settings.AuthenticationStatus.TWO_FAC_AUTH):
+    if not cache_settings.check_authentication_status(email, ip, cache_settings.AuthenticationStatus.TWO_FAC_AUTH):
         return Response(status=403)
     
     if serializer.is_valid():
