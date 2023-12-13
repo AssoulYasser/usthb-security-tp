@@ -27,10 +27,6 @@ class MyUserManage(BaseUserManager):
             extra_fields.pop('email')
             extra_fields.pop('password')
 
-            private_key, public_key = rsa.generate_rsa_key_pair()
-            extra_fields['private_key'] = private_key
-            extra_fields['public_key'] = public_key
-
             user = self.model(email=email, **extra_fields)
             user.set_password(password)
 

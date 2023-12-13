@@ -8,5 +8,6 @@ class CacheTest(TestCase):
     cache.set('key', {'a': 1, 'b': 2}, timeout=90)
     value = cache.get('key')
     print(value)
-    value['c'] = 5
+    cache.get('key')['c'] = 5
+    value = cache.get('key')
     print(value)

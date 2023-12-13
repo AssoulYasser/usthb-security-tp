@@ -6,12 +6,15 @@ from .forms import *
 from django.contrib.auth.hashers import check_password
 from django.core.mail import send_mail
 import random
-from django.core.cache import cache
 from .decorators import *
 from deepface import DeepFace
 from PIL import Image
 import os
 from . import rsa
+from . import cache_settings
+
+def get_ip_address(request):
+    return request.META.get("REMOTE_ADDR")
 
 def register(data):
     serializer = MyUserSerializer(data=data)
@@ -64,15 +67,16 @@ def users(request):
     return render(request, 'tp3/index.html', context)
 
 @api_view(['POST'])
-@REQUEST_RSA_KEY
 def get_rsa_key(request):
     data = request.data
     serializer = EmailSerializer(data=data)
     if serializer.is_valid():
         try:
-            cache_key = request_cache_key(request)
-            rsa_code = cache.get(cache_key)[AuthenticationStep.PUBLIC_KEY]
-            return Response(status=200, data={'public_key': rsa_code})
+            email = data['email']
+            ip = get_ip_address(request)
+            private_key, public_key = rsa.generate_rsa_key_pair()
+            cache_settings.set_private_key(email, ip, private_key)
+            return Response(status=200, data={'public_key': public_key})
         except:
             return Response(status=404)
     return Response(status=400, data={'error': serializer.error_messages})
@@ -81,6 +85,12 @@ def get_rsa_key(request):
 def login(request):
     email = request.data['email']
     password = request.data['password']
+    ip = get_ip_address(request)
+    
+    key = cache_settings.request_authentication_cache_key(email, ip)
+    
+    if key is None:
+        return Response(status=403) 
 
     try:
         user = MyUser.objects.get(email=email)
@@ -88,9 +98,7 @@ def login(request):
         return Response(status=404)
 
     try:
-        cache_key = request_cache_key(request)
-
-        private_key = cache.get(cache_key)[AuthenticationStep.PRIVATE_KEY]
+        private_key = cache_settings.get_private_key(email, ip)
         
         password = rsa.dectyption(private_key_der_b64=private_key, encrypted_data_b64=password)
         
@@ -98,6 +106,7 @@ def login(request):
         return Response(status=422)
     
     if check_password(password, user.password):
+        cache_settings.validate_status(email, ip, cache_settings.AuthenticationStatus.PASSWORD)
         return Response(status=200)
     else:
         return Response(status=401)   
@@ -106,11 +115,17 @@ def login(request):
 def email_two_factor_authentication(request):
     data = request.data
     serializer = EmailSerializer(data=data)
+    
+    email = data['email']
+    ip = get_ip_address(request)
+
+    if cache_settings.check_authentication_status(email, ip, cache_settings.AuthenticationStatus.PASSWORD):
+        return Response(status=403)
+
     if serializer.is_valid():
         subject = 'no-reply'
         message = str(random.randint(11111, 99999))
         cache.set(data['email'], message, timeout=90)
-        email = data['email']
         try:
             mail_result = send_mail(
                 subject=subject,
@@ -120,7 +135,7 @@ def email_two_factor_authentication(request):
                 fail_silently=False
             )
             if mail_result:
-                cache.set(email, message, timeout=90)
+                cache_settings.set_2fa_code(email, ip, message)
                 return Response(status=200)
             return Response(status=500)
         except Exception as E:
@@ -131,11 +146,18 @@ def email_two_factor_authentication(request):
 def verify_email_two_factory_authentication(request):
     data = request.data
     serializer = VerifyEmailTwoFactorAuthenticationSerializer(data=data)
+
+    email = data['email']
+    ip = get_ip_address(request)
+
+    if cache_settings.check_authentication_status(email, ip, cache_settings.AuthenticationStatus.PASSWORD):
+        return Response(status=403)
+
     if serializer.is_valid():
         code = data['code']
         email = data['email']
-        if code == cache.get(email):
-            cache.delete(email)
+        if cache_settings.is_2fa_code_valid(email, ip, code):
+            cache_settings.validate_status(email, ip, cache_settings.AuthenticationStatus.TWO_FAC_AUTH)
             return Response(status=200)
         return Response(status=401)
     return Response(status=400, data={'error':serializer.error_messages})
@@ -154,6 +176,13 @@ def save_tempo_image(image, email):
 def face_recognition_factor(request):
     data = request.data
     serializer = FaceRecognitionFactorSerializer(data=data)
+    
+    email = data['email']
+    ip = get_ip_address(request)
+
+    if cache_settings.check_authentication_status(email, ip, cache_settings.AuthenticationStatus.TWO_FAC_AUTH):
+        return Response(status=403)
+    
     if serializer.is_valid():
         email = data['email']
         image = data['image']
@@ -165,6 +194,7 @@ def face_recognition_factor(request):
         except Exception as E:
             return Response(status=422)
         if verify['verified']:
+            cache_settings.validate_status(email, ip, cache_settings.AuthenticationStatus.FACE_RECOGNITION)
             return Response(status=200)
         return Response(status=401)
     return Response(status=400, data={'error': serializer.error_messages})
