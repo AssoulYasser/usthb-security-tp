@@ -1,5 +1,7 @@
 import socket
 from rest_framework.response import Response
+from django.core.cache import cache
+from . import rsa
 
 def get_local_ip_addresses():
     try:
@@ -20,4 +22,24 @@ def ALLOW_ONLY_LOCAL_HOST(func):
             return func(request)
         else:
             return Response(status=401)
+    return decorator
+
+def REQUEST_RSA_KEY(func):
+    def decorator(request):
+        try:
+            email = request.data['email']
+            request_address = request.META.get("REMOTE_ADDR")
+        except:
+            return Response(status=400)
+        
+        cache_key = f'{email}:{request_address}'
+
+        print(cache_key)
+
+        private_key, public_key = rsa.generate_rsa_key_pair()
+        
+        request.data['public_key'] = public_key
+        
+        return func(request)
+
     return decorator

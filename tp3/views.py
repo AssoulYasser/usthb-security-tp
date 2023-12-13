@@ -3,7 +3,6 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializers import *
 from .forms import *
-from django.contrib import messages
 from django.contrib.auth.hashers import check_password
 from django.core.mail import send_mail
 import random
@@ -65,14 +64,14 @@ def users(request):
     return render(request, 'tp3/index.html', context)
 
 @api_view(['POST'])
+@REQUEST_RSA_KEY
 def get_rsa_key(request):
     data = request.data
     serializer = EmailSerializer(data=data)
     if serializer.is_valid():
         email = data['email']
         try:
-            user = MyUser.objects.get(email=email)
-            rsa_code = user.public_key
+            rsa_code = data['public_key']
             return Response(status=200, data={'public_key': rsa_code})
         except:
             return Response(status=404)
