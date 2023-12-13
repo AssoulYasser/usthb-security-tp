@@ -13,6 +13,7 @@ class MyUser(AbstractBaseUser, PermissionsMixin):
     personal_image = models.ImageField(upload_to=user_directory_path)
     is_staff = models.BooleanField(default=False)
     last_login = models.DateTimeField(auto_now_add=True)
+    is_blocked = models.BooleanField(default=False)
     
     objects = managers.MyUserManage()
 

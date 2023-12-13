@@ -7,8 +7,8 @@
         <tr>
             <th>First Name</th>
             <th>Last Name</th>
-            <th>Mac Address</th>
             <th>Email</th>
+            <th>Is Blocked</th>
         </tr>
         {% for user in users %}
             <tr>
@@ -19,10 +19,19 @@
                     {{user.last_name}}
                 </td>
                 <td>
-                    {{user.mac_address}}
+                    {{user.email}}
                 </td>
                 <td>
-                    {{user.email}}
+                    {% if user.is_blocked %}
+                        <form method='POST' action=''>
+                            {% csrf_token %}
+                            <input type="hidden" name="_method" value="PUT">
+                            <input type="hidden" name="user_email" value="{{ user.email }}">
+                            <input type="submit" value="Submit">
+                        </form>
+                    {% else %}
+                        <p>ACTIVE</p>
+                    {% endif %}
                 </td>
             </tr>
         {% endfor %}

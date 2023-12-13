@@ -13,6 +13,15 @@ import os
 from . import rsa
 from . import cache_settings
 
+OK_STATUS = 200
+BAD_STATUS = 400
+UNAUTHORIZED_STATUS = 401
+NOT_FOUND_STATUS = 404
+TIMEOUT_STATUS = 408
+UNPROCESSABLE_CONTENT_STATUS = 422
+LOCKED_STATUS = 423
+SERVER_ERROR_STATUS = 500
+
 def get_ip_address(request):
     return request.META.get("REMOTE_ADDR")
 
@@ -21,6 +30,16 @@ def register(data):
     if not serializer.is_valid():
         raise ValueError(serializer.error_message)
     serializer.save()
+
+def block_account(email):
+    user = MyUser.objects.get(email=email)
+    user.is_blocked = True
+    user.save()
+
+def unblock_user(email):
+    user = MyUser.objects.get(email=email)
+    user.is_blocked = False
+    user.save()
 
 @ALLOW_ONLY_LOCAL_HOST
 def users(request):
@@ -33,6 +52,12 @@ def users(request):
     }
 
     if request.method == 'POST':
+        if request.POST.get('_method') == 'PUT':
+            request.method = 'PUT'
+            email = request.POST.get('user_email')
+            unblock_user(email)
+            return render(request, 'tp3/index.html', context)
+        
         form_result = MyUserForm(request.POST, request.FILES)
         if form_result.is_valid():
             data = form_result.cleaned_data
@@ -75,15 +100,20 @@ def get_rsa_key(request):
         try:
             user = MyUser.objects.get(email=email)
         except:
-            return Response(status=401)
+            return Response(status=NOT_FOUND_STATUS)
+        
+        if user.is_blocked:
+            return Response(status=LOCKED_STATUS)
+        
+        ip = get_ip_address(request)
+        private_key, public_key = rsa.generate_rsa_key_pair()
         try:
-            ip = get_ip_address(request)
-            private_key, public_key = rsa.generate_rsa_key_pair()
             cache_settings.set_private_key(email, ip, private_key)
-            return Response(status=200, data={'public_key': public_key})
+            return Response(status=OK_STATUS, data={'public_key': public_key})
         except:
-            return Response(status=404)
-    return Response(status=400, data={'error': serializer.error_messages})
+            block_account(email)
+            return Response(status=LOCKED_STATUS)
+    return Response(status=BAD_STATUS, data={'error': serializer.error_messages})
 
 @api_view(['POST'])
 def login(request):
@@ -94,12 +124,12 @@ def login(request):
     key = cache_settings.request_authentication_cache_key(email, ip)
     
     if key is None:
-        return Response(status=403) 
+        return Response(status=TIMEOUT_STATUS) 
 
     try:
         user = MyUser.objects.get(email=email)
     except Exception as E:
-        return Response(status=404)
+        return Response(status=NOT_FOUND_STATUS)
 
     try:
         private_key = cache_settings.get_private_key(email, ip)
@@ -107,13 +137,13 @@ def login(request):
         password = rsa.dectyption(private_key_der_b64=private_key, encrypted_data_b64=password)
         
     except Exception as E:
-        return Response(status=422)
+        return Response(status=UNPROCESSABLE_CONTENT_STATUS)
     
     if check_password(password, user.password):
         cache_settings.validate_status(email, ip, cache_settings.AuthenticationStatus.PASSWORD)
-        return Response(status=200)
+        return Response(status=OK_STATUS)
     else:
-        return Response(status=401)   
+        return Response(status=UNAUTHORIZED_STATUS)   
 
 @api_view(['POST'])
 def email_two_factor_authentication(request):
@@ -124,7 +154,7 @@ def email_two_factor_authentication(request):
     ip = get_ip_address(request)
 
     if not cache_settings.check_authentication_status(email, ip, cache_settings.AuthenticationStatus.PASSWORD):
-        return Response(status=403)
+        return Response(status=TIMEOUT_STATUS)
 
     if serializer.is_valid():
         subject = 'no-reply'
@@ -140,11 +170,11 @@ def email_two_factor_authentication(request):
             )
             if mail_result:
                 cache_settings.set_2fa_code(email, ip, message)
-                return Response(status=200)
-            return Response(status=500)
+                return Response(status=OK_STATUS)
+            return Response(status=SERVER_ERROR_STATUS)
         except Exception as E:
-            return Response(status=500)
-    return Response(status=400, data=serializer.error_messages)
+            return Response(status=SERVER_ERROR_STATUS)
+    return Response(status=BAD_STATUS, data=serializer.error_messages)
 
 @api_view(['POST'])
 def verify_email_two_factory_authentication(request):
@@ -155,16 +185,16 @@ def verify_email_two_factory_authentication(request):
     ip = get_ip_address(request)
 
     if not cache_settings.check_authentication_status(email, ip, cache_settings.AuthenticationStatus.PASSWORD):
-        return Response(status=403)
+        return Response(status=TIMEOUT_STATUS)
 
     if serializer.is_valid():
         code = data['code']
         email = data['email']
         if cache_settings.is_2fa_code_valid(email, ip, code):
             cache_settings.validate_status(email, ip, cache_settings.AuthenticationStatus.TWO_FAC_AUTH)
-            return Response(status=200)
-        return Response(status=401)
-    return Response(status=400, data={'error':serializer.error_messages})
+            return Response(status=OK_STATUS)
+        return Response(status=UNAUTHORIZED_STATUS)
+    return Response(status=BAD_STATUS, data={'error':serializer.error_messages})
 
 def save_tempo_image(image, email):
     save_path = f'tp3/tempo/'
@@ -185,7 +215,7 @@ def face_recognition_factor(request):
     ip = get_ip_address(request)
 
     if not cache_settings.check_authentication_status(email, ip, cache_settings.AuthenticationStatus.TWO_FAC_AUTH):
-        return Response(status=403)
+        return Response(status=TIMEOUT_STATUS)
     
     if serializer.is_valid():
         email = data['email']
@@ -196,9 +226,9 @@ def face_recognition_factor(request):
         try:
             verify = DeepFace.verify(img1_path=str(user_photo_path), img2_path=path_to_sent_image, model_name='VGG-Face')
         except Exception as E:
-            return Response(status=422)
+            return Response(status=UNPROCESSABLE_CONTENT_STATUS)
         if verify['verified']:
             cache_settings.validate_status(email, ip, cache_settings.AuthenticationStatus.FACE_RECOGNITION)
-            return Response(status=200)
-        return Response(status=401)
-    return Response(status=400, data={'error': serializer.error_messages})
+            return Response(status=OK_STATUS)
+        return Response(status=UNAUTHORIZED_STATUS)
+    return Response(status=BAD_STATUS, data={'error': serializer.error_messages})
