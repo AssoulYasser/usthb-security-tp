@@ -75,7 +75,7 @@ def get_rsa_key(request):
             rsa_code = user.public_key
             return Response(status=200, data={'public_key': rsa_code})
         except:
-            return Response(status=404, data={'error': 'user not found'})
+            return Response(status=404)
     return Response(status=400, data={'error': serializer.error_messages})
 
 @api_view(['POST'])
@@ -86,12 +86,12 @@ def login(request):
     try:
         user = MyUser.objects.get(email=email)
     except Exception as E:
-        return Response(status=404, data={'error': 'user not found'})
+        return Response(status=404)
 
     try:
         password = rsa.dectyption(private_key_der_b64=user.private_key, encrypted_data_b64=password)
     except Exception as E:
-        return Response(status=404, data={'error': 'decryption failed'})
+        return Response(status=422)
     
     if check_password(password, user.password):
         return Response(status=200)
@@ -117,10 +117,10 @@ def email_two_factor_authentication(request):
             )
             if mail_result:
                 cache.set(email, message, timeout=90)
-                return Response(status=200, data={'code':'mail has been sent successfully'})
-            return Response(status=500, data={'error':'mail failed to be sent'})
+                return Response(status=200)
+            return Response(status=500)
         except Exception as E:
-            return Response(status=500, data={'error':str(E)})
+            return Response(status=500)
     return Response(status=400, data=serializer.error_messages)
 
 @api_view(['POST'])
@@ -132,8 +132,8 @@ def verify_email_two_factory_authentication(request):
         email = data['email']
         if code == cache.get(email):
             cache.delete(email)
-            return Response(status=200, data={'authorized': True})
-        return Response(status=400, data={'authorized': False})
+            return Response(status=200)
+        return Response(status=401)
     return Response(status=400, data={'error':serializer.error_messages})
 
 def save_tempo_image(image, email):
@@ -159,6 +159,8 @@ def face_recognition_factor(request):
         try:
             verify = DeepFace.verify(img1_path=str(user_photo_path), img2_path=path_to_sent_image, model_name='VGG-Face')
         except Exception as E:
-            return Response(status=400, data={'error': str(E)})
-        return Response(status=200, data={'is_valid': str(verify['verified'])})
+            return Response(status=422)
+        if verify['verified']:
+            return Response(status=200)
+        return Response(status=401)
     return Response(status=400, data={'error': serializer.error_messages})
