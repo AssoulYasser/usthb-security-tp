@@ -101,13 +101,13 @@ def login(request):
     except Exception as E:
         return Response(status=404)
 
-    # try:
-    #     private_key = cache_settings.get_private_key(email, ip)
+    try:
+        private_key = cache_settings.get_private_key(email, ip)
         
-    #     password = rsa.dectyption(private_key_der_b64=private_key, encrypted_data_b64=password)
+        password = rsa.dectyption(private_key_der_b64=private_key, encrypted_data_b64=password)
         
-    # except Exception as E:
-    #     return Response(status=422)
+    except Exception as E:
+        return Response(status=422)
     
     if check_password(password, user.password):
         cache_settings.validate_status(email, ip, cache_settings.AuthenticationStatus.PASSWORD)
