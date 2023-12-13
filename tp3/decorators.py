@@ -19,5 +19,5 @@ def ALLOW_ONLY_LOCAL_HOST(func):
         if request_address == local_address or request_address == LOCAL_HOST:
             return func(request)
         else:
-            return Response(status=401, data={"error":"UNAUTHORIZED"})
+            return Response(status=401)
     return decorator
