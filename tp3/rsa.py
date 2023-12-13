@@ -45,8 +45,6 @@ def dectyption(private_key_der_b64,encrypted_data_b64):
     # Load private key in DER format
     private_key = serialization.load_der_private_key(private_key_der_bytes, password=None, backend=default_backend())
 
-    print("Ciphertext Length:", len(encrypted_data_bytes))
-
     # Decrypt the data
     decrypted_data = private_key.decrypt(
         encrypted_data_bytes,

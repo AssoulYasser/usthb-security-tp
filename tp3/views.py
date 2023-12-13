@@ -69,9 +69,9 @@ def get_rsa_key(request):
     data = request.data
     serializer = EmailSerializer(data=data)
     if serializer.is_valid():
-        email = data['email']
         try:
-            rsa_code = data['public_key']
+            cache_key = request_cache_key(request)
+            rsa_code = cache.get(cache_key)[AuthenticationStep.PUBLIC_KEY]
             return Response(status=200, data={'public_key': rsa_code})
         except:
             return Response(status=404)
@@ -88,7 +88,12 @@ def login(request):
         return Response(status=404)
 
     try:
-        password = rsa.dectyption(private_key_der_b64=user.private_key, encrypted_data_b64=password)
+        cache_key = request_cache_key(request)
+
+        private_key = cache.get(cache_key)[AuthenticationStep.PRIVATE_KEY]
+        
+        password = rsa.dectyption(private_key_der_b64=private_key, encrypted_data_b64=password)
+        
     except Exception as E:
         return Response(status=422)
     
