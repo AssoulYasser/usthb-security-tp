@@ -350,5 +350,8 @@ def android_id(request):
             return Response(status=UNPROCESSABLE_CONTENT_STATUS)
         
         if user.android_id == android_id:
+            last_access = get_last_accessed_account(email, ip)
+            last_access.delete()
+            AuthorizedAccessHistory(user=user, ip_address=ip).save()
             return Response(status=OK_STATUS)
         return Response(status=UNAUTHORIZED_STATUS)

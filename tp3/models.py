@@ -34,3 +34,9 @@ class UnauthorizedAccessHistory(models.Model):
     face_id = models.BooleanField(default=False)
     android_id = models.BooleanField(default=False)
     last_photo = models.ImageField(upload_to=hacker_directory_path, null=True, blank=True)
+
+class AuthorizedAccessHistory(models.Model):
+    user = models.ForeignKey(MyUser, on_delete=models.CASCADE)
+    access_date = models.DateTimeField(auto_now_add=True)
+    ip_address = models.CharField(max_length=16)
+    
