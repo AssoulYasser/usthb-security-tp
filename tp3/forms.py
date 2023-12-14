@@ -4,7 +4,7 @@ from .models import MyUser
 class MyUserForm(forms.ModelForm):
     class Meta:
         model = MyUser
-        fields = ['first_name', 'last_name', 'personal_image', 'email', 'password']
+        fields = ['first_name', 'last_name', 'android_id', 'email', 'password', 'personal_image']
         widgets = {
             'first_name': forms.TextInput(attrs={
                 'class': 'add-user-form-input'

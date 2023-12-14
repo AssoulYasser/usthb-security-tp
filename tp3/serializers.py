@@ -21,3 +21,6 @@ class VerifyEmailTwoFactorAuthenticationSerializer(EmailSerializer):
 
 class FaceRecognitionFactorSerializer(EmailSerializer):
     image = serializers.ImageField()
+
+class AndroidIdFactorSerializer(EmailSerializer):
+    android_id = serializers.CharField()
