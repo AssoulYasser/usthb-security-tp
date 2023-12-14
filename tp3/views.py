@@ -31,9 +31,34 @@ def register(data):
         raise ValueError(serializer.error_message)
     serializer.save()
 
-def block_account(email):
+def block_account(email, send_email, ip, status):
     user = MyUser.objects.get(email=email)
     user.is_blocked = True
+    cracked_layers = []
+    match status:
+        case cache_settings.AuthenticationStatus.TWO_FAC_AUTH:
+            cracked_layers.append(cache_settings.AuthenticationStatus.PASSWORD)
+        case cache_settings.AuthenticationStatus.FACE_RECOGNITION:
+            cracked_layers.append(cache_settings.AuthenticationStatus.PASSWORD)
+            cracked_layers.append(cache_settings.AuthenticationStatus.TWO_FAC_AUTH)
+        case cache_settings.AuthenticationStatus.ANDROID_ID:
+            cracked_layers.append(cache_settings.AuthenticationStatus.PASSWORD)
+            cracked_layers.append(cache_settings.AuthenticationStatus.TWO_FAC_AUTH)
+            cracked_layers.append(cache_settings.AuthenticationStatus.FACE_RECOGNITION)
+    email_message = f'An unauthorized access attempt has been detected from the IP address: {ip} targeting your account security.'
+    if cracked_layers != []:
+        email_message += 'Cracked layers are: \n'
+        for layer in cracked_layers:
+            email_message += '*' + layer.value + '\n'
+    email_message = email_message + ' We kindly request you to reach out to our HR department to facilitate unblocking procedures for your account.\n'
+    if send_email:
+        send_mail(
+                subject='YOUR ACCOUNT IS BEING CRACKED',
+                message= email_message,
+                from_email='settings.EMAIL_HOST_USER',
+                recipient_list=[email],
+                fail_silently=False
+            )
     user.save()
 
 def unblock_user(email):
@@ -111,7 +136,7 @@ def get_rsa_key(request):
             cache_settings.set_private_key(email, ip, private_key)
             return Response(status=OK_STATUS, data={'public_key': public_key})
         except:
-            block_account(email)
+            block_account(email, send_mail, ip, cache_settings.AuthenticationStatus.FACE_RECOGNITION)
             return Response(status=LOCKED_STATUS)
     return Response(status=BAD_STATUS, data={'error': serializer.error_messages})
 

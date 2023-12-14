@@ -27,7 +27,7 @@ def set_private_key(email, ip, private_key):
     repeated = cache.get(repetetion_key)
     if repeated is None:
         cache.set(repetetion_key, 1, timeout=AUTHENTICATION_PROCCESS_STATUS_REP_DURATION)
-    elif repeated > ALLOWED_AUTHENTICATION_PROCCESS_REP:
+    elif repeated >= ALLOWED_AUTHENTICATION_PROCCESS_REP:
         raise Exception('ACCOUNT SHOULD BE BLOCKED')
     else:
         cache.set(repetetion_key, repeated + 1, timeout=AUTHENTICATION_PROCCESS_STATUS_REP_DURATION)

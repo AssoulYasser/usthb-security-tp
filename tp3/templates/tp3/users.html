@@ -27,7 +27,7 @@
                             {% csrf_token %}
                             <input type="hidden" name="_method" value="PUT">
                             <input type="hidden" name="user_email" value="{{ user.email }}">
-                            <input type="submit" value="Submit">
+                            <input type="submit" value="UNBLOCK" class='save_btn'>
                         </form>
                     {% else %}
                         <p>ACTIVE</p>
