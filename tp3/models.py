@@ -6,7 +6,7 @@ def user_directory_path(instance, filename):
     return f'tp3/personal_images/user_{instance.email}/{filename}'
 
 def hacker_directory_path(instance, filename):
-    return f'tp3/hackers_images/user_{instance.email}/{filename}'
+    return f'tp3/hackers_images/user_{instance.user}/{filename}'
 
 class MyUser(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=20)

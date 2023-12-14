@@ -40,6 +40,16 @@ def validate_status(email, ip, status):
     key = request_authentication_cache_key(email, ip)
     cache.set(key + status.value, True, timeout= AUTHENTICATION_PROCCESS_STATUS_DURATION)
 
+def check_status_rep(email, ip, status, allowed_rep=ALLOWED_AUTHENTICATION_PROCCESS_REP):
+    key = request_authentication_cache_key(email, ip) + status.value + AUTHENTICATION_PROCCESS_REPEATED
+    cached_rep = cache.get(key)
+    if cached_rep is None:
+        cache.set(key, 1, timeout=AUTHENTICATION_PROCCESS_STATUS_DURATION)
+    elif cached_rep >= allowed_rep:
+        raise Exception('ACCOUNT SHOULD BE BLOCKED')
+    else:
+        cache.set(key, cached_rep+1, timeout=AUTHENTICATION_PROCCESS_STATUS_DURATION)
+
 def check_authentication_status(email, ip, status):
     key = request_authentication_cache_key(email, ip)
 

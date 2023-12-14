@@ -73,6 +73,11 @@ status = 401 UNAUTHORIZED
 ```
 status = 408 TIMEOUT
 ```
+###### If user has been blocked
+```
+status = 423 LOCKED STATUS
+```
+___
 ___
 
 ### POST /tp3/email-two-factor-authentication/
@@ -99,6 +104,11 @@ ___
 ```
 status = 408 TIMEOUT
 ```
+###### If user has been blocked
+```
+status = 423 LOCKED STATUS
+```
+___
 
 ### POST /tp3/verify-email-two-factor-authentication/
 Check if the received code is the same as the code has been sent to the email.
@@ -124,6 +134,11 @@ status = 401 UNAUTHORIZED
 ```
 status = 408 TIMEOUT
 ```
+###### If user has been blocked
+```
+status = 423 LOCKED STATUS
+```
+___
 
 ### POST /tp3/face-recognition-factor/
 Check face id for the user.
@@ -153,6 +168,11 @@ status = 401 UNAUTHORIZED
 ```
 status = 408 TIMEOUT
 ```
+###### If user has been blocked
+```
+status = 423 LOCKED STATUS
+```
+___
 ### POST /tp3/android-id/
 Check face id for the user.
 
@@ -181,3 +201,8 @@ status = 401 UNAUTHORIZED
 ```
 status = 408 TIMEOUT
 ```
+###### If user has been blocked
+```
+status = 423 LOCKED STATUS
+```
+___

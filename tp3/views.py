@@ -31,7 +31,7 @@ def register(data):
         raise ValueError(serializer.error_message)
     serializer.save()
 
-def block_account(email, send_email, ip, status):
+def block_account(email, ip, status):
     user = MyUser.objects.get(email=email)
     user.is_blocked = True
     cracked_layers = []
@@ -51,14 +51,14 @@ def block_account(email, send_email, ip, status):
         for layer in cracked_layers:
             email_message += '*' + layer.value + '\n'
     email_message = email_message + ' We kindly request you to reach out to our HR department to facilitate unblocking procedures for your account.\n'
-    if send_email:
-        send_mail(
-                subject='YOUR ACCOUNT IS BEING CRACKED',
-                message= email_message,
-                from_email='settings.EMAIL_HOST_USER',
-                recipient_list=[email],
-                fail_silently=False
-            )
+
+    send_mail(
+        subject='YOUR ACCOUNT IS BEING CRACKED',
+        message= email_message,
+        from_email='settings.EMAIL_HOST_USER',
+        recipient_list=[email],
+        fail_silently=False
+    )
     user.save()
 
 def unblock_user(email):
@@ -141,7 +141,7 @@ def get_rsa_key(request):
         try:
             cache_settings.set_private_key(email, ip, private_key)
         except:
-            block_account(email, send_mail, ip, cache_settings.AuthenticationStatus.FACE_RECOGNITION)
+            block_account(email, ip, None)
             return Response(status=LOCKED_STATUS)
         
         new_access = UnauthorizedAccessHistory(user=user, ip_address=ip)
@@ -164,11 +164,20 @@ def login(request):
     if private_key is None:
         return Response(status=TIMEOUT_STATUS) 
 
+
     try:
         user = MyUser.objects.get(email=email)
     except Exception as E:
         return Response(status=NOT_FOUND_STATUS)
 
+    try:
+        if user.is_blocked:
+            raise Exception('THIS ACCOUNT IS BLOCKED')
+        cache_settings.check_status_rep(email, ip, cache_settings.AuthenticationStatus.PASSWORD)
+    except:
+        block_account(email, ip, cache_settings.AuthenticationStatus.PASSWORD)
+        return Response(status=LOCKED_STATUS)
+    
     try:
         password = rsa.dectyption(private_key_der_b64=private_key, encrypted_data_b64=password)
     except Exception as E:
@@ -195,6 +204,15 @@ def email_two_factor_authentication(request):
         if not cache_settings.check_authentication_status(email, ip, cache_settings.AuthenticationStatus.PASSWORD):
             return Response(status=TIMEOUT_STATUS)
         
+        try:
+            user = MyUser.objects.get(email=email)
+            if user.is_blocked:
+                raise Exception('THIS ACCOUNT IS BLOCKED')
+            cache_settings.check_status_rep(email, ip, cache_settings.AuthenticationStatus.TWO_FAC_AUTH)
+        except:
+            block_account(email, ip, cache_settings.AuthenticationStatus.TWO_FAC_AUTH)
+            return Response(status=LOCKED_STATUS)
+
         subject = 'no-reply'
         message = str(random.randint(11111, 99999))
         cache.set(data['email'], message, timeout=90)
@@ -226,6 +244,15 @@ def verify_email_two_factory_authentication(request):
         if not cache_settings.check_authentication_status(email, ip, cache_settings.AuthenticationStatus.PASSWORD):
             return Response(status=TIMEOUT_STATUS)
         
+        try:
+            user = MyUser.objects.get(email=email)
+            if user.is_blocked:
+                raise Exception('THIS ACCOUNT IS BLOCKED')
+            cache_settings.check_status_rep(email, ip, cache_settings.AuthenticationStatus.TWO_FAC_AUTH_CODE, allowed_rep=30)
+        except:
+            block_account(email, ip, cache_settings.AuthenticationStatus.TWO_FAC_AUTH_CODE)
+            return Response(status=LOCKED_STATUS)
+
         code = data['code']
         email = data['email']
         if cache_settings.is_2fa_code_valid(email, ip, code):
@@ -250,8 +277,7 @@ def save_tempo_image(image, email):
 @api_view(['POST'])
 def face_recognition_factor(request):
     data = request.data
-    serializer = FaceRecognitionFactorSerializer(data=data)
-    
+    serializer = FaceRecognitionFactorSerializer(data=data)    
     
     if serializer.is_valid():
         email = data['email']
@@ -260,6 +286,15 @@ def face_recognition_factor(request):
 
         if not cache_settings.check_authentication_status(email, ip, cache_settings.AuthenticationStatus.TWO_FAC_AUTH):
             return Response(status=TIMEOUT_STATUS)
+        
+        try:
+            user = MyUser.objects.get(email=email)
+            if user.is_blocked:
+                raise Exception('THIS ACCOUNT IS BLOCKED')
+            cache_settings.check_status_rep(email, ip, cache_settings.AuthenticationStatus.FACE_RECOGNITION)
+        except:
+            block_account(email, ip, cache_settings.AuthenticationStatus.FACE_RECOGNITION)
+            return Response(status=LOCKED_STATUS)
         
         user = MyUser.objects.get(email=email)
         user_photo_path = user.personal_image
@@ -295,6 +330,24 @@ def android_id(request):
             user = MyUser.objects.get(email=email)
         except:
             return Response(status=NOT_FOUND_STATUS)
+        
+        try:
+            if user.is_blocked:
+                raise Exception('THIS ACCOUNT IS BLOCKED')
+            cache_settings.check_status_rep(email, ip, cache_settings.AuthenticationStatus.ANDROID_ID, allowed_rep=1)
+        except:
+            block_account(email, ip, cache_settings.AuthenticationStatus.ANDROID_ID)
+            return Response(status=LOCKED_STATUS)
+        
+        private_key = cache_settings.get_private_key(email, ip)
+    
+        if private_key is None:
+            return Response(status=TIMEOUT_STATUS)
+        
+        try:
+            android_id = rsa.dectyption(private_key_der_b64=private_key, encrypted_data_b64=android_id)
+        except Exception as E:
+            return Response(status=UNPROCESSABLE_CONTENT_STATUS)
         
         if user.android_id == android_id:
             return Response(status=OK_STATUS)
